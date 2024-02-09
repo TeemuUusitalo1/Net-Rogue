@@ -11,16 +11,27 @@ namespace net_rogue
         public void Run()
         {
             PlayerCharacter player = new PlayerCharacter();
+
+            
             Console.WriteLine("What is your name?");
-            player name = Console.ReadLine();
+            string nimi = Console.ReadLine();
+
+            //player name = Console.ReadLine();
+            
             Console.WriteLine("Select Race");
             Console.WriteLine("1: Human");
             Console.WriteLine("2: Elf");
             Console.WriteLine("3: Orc");
             string raceAnswer = Console.ReadLine();
-            if (raceAnswer == Race.Human.ToString() )
+
+            Console.WriteLine("Valitse luokka;");
+            Console.WriteLine(Role.Rogue.ToString());
+            Console.WriteLine(Role.Warrior.ToString());
+            Console.WriteLine(Role.MagicUser.ToString());
+
+            if (raceAnswer == Species.Human.ToString() )
             {
-                player.rotu = Race.Human;
+                player.species = Species.Human;
             }
         }
     }
