@@ -5,6 +5,8 @@ using System.Security.Principal;
 using System.Text;
 using System.Threading.Tasks;
 using System.Numerics;
+using System.Threading;
+using ZeroElectric.Vinculum;
 
 namespace net_rogue
 {
@@ -24,10 +26,25 @@ namespace net_rogue
 
     internal class PlayerCharacter
     {
+
+        Texture texture;
         public string Name;
         public Species species;
         public Role role;
 
         public Vector2 position;
+
+        char image;
+        ConsoleColor drawColor;
+
+        public void SetImageAndIndex(Texture Image)
+        {
+            texture = Image;
+
+        }
+
+
+
+
     }
 }
