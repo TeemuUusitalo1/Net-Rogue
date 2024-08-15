@@ -10,9 +10,11 @@ namespace net_rogue
     internal class Map
     {
         public int mapWidth;
+        public MapLayer[] layers;
         public int[] mapTiles;
+
         Texture texture;
-        
+
 
         public void SetTileSheet(Texture Image)
         {
@@ -41,23 +43,30 @@ namespace net_rogue
                     int index = x + y * mapWidth; // Calculate index of tile at (x, y)
                     int tileId = mapTiles[index]; // Read the tile value at index
 
-                    // Draw the tile graphics
-                    Console.SetCursorPosition(x, y);
-                    switch (tileId)
-                    {
-                        case 1:
-                            Console.Write("."); // Floor
-                            break;
-                        case 2:
-                            Console.Write("#"); // Wall
-                            break;
-                        default:
-                            Console.Write(" ");
-                            break;
-                    }
+
                 }
             }
 
         }
+
+        public MapLayer GetLayer(string layerName)
+        {
+            for (int i = 0; i < layers.Length; i++)
+            {
+                if (layers[i].name == layerName)
+                {
+                    return layers[i];
+                }
+            }
+            Console.WriteLine($"Error: No layer with name: {layerName}");
+            return null; // Wanted layer was not found!
+        }
     }
+
+    class MapLayer
+    {
+        public string name;
+        public int[] mapTiles;
+    }
+
 }

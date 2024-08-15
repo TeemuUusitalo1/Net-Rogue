@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using ZeroElectric.Vinculum;
 using static System.Net.Mime.MediaTypeNames;
 using System.Windows.Input;
+using TurboMapReader;
 
 namespace net_rogue
 {
@@ -21,6 +22,8 @@ namespace net_rogue
         public int game_width = 800;
         public int game_height = 800;
         public RenderTexture game_screen;
+        public static int tileSize = 16;
+
 
         private string AskName()
         {
@@ -165,20 +168,40 @@ namespace net_rogue
             Raylib.SetWindowMinSize(game_width, game_height);
             tilesheet = Raylib.LoadTexture("Images/tilemap_packed.png");
 
+
+            TurboMapReader.TiledMap tiledMap = TurboMapReader.MapReader.LoadMapFromFile("Maps/mapfile.json");
+
+            int mapWidth = tiledMap.width;
+            int mapHeight = tiledMap.height;
+
+            TurboMapReader.MapLayer groundLayer = tiledMap.GetLayerByName("Ground");
+
+            if (tiledMap == null)
+            {
+            // error!
+            }
+
+            //TurboMapReader.MapLayer groundLayer = tiledMap.GetLayerByName("Ground");
+            //TiledMap loadedTileMap = TurboMapReader.MapReader.LoadMapFromFile(f);
+
+            int howManyTiles = groundLayer.data.Length;
+            int[] groundTiles = groundLayer.data;
+            MapLayer myGroundLayer = new MapLayer();
+            myGroundLayer.mapTiles = new int[howManyTiles];
+
             MapLoader mapread = new MapLoader();
 
-            //MapLoader loader = new MapLoader();
             //level01 = loader.LoadMapFromFile("mapfile.json");
             //level01 = mapread.LoadLayeredMap("Maps/mapfile_layers.json");
-            level = mapread.LoadMapFromFile("Maps/mapfile.json");
+            level = mapread.LoadMapFromFile("Maps/mapfile.");
             level.SetTileSheet(tilesheet);
-            player.SetImageAndIndex(tilesheet, 8 * 12 + 3);
+            player.SetImageAndIndex(tilesheet,12, 8 * 12 + 3);
             Texture imageTexture = Raylib.LoadTexture("image.png");
 
-            //graphicsMode = GameGraphicsMode.Console;
+           // Rectange imageRect = new Rectangle(imagePixelX, imagePixelY, Game.tileSize, Game.tileSize);
 
-            myImage = imageTexture;
         }
+
 
 
 
@@ -195,7 +218,7 @@ namespace net_rogue
             //void DrawTextureV(Texture2D texture, Vector2 position, Color tint);
 
             Console.Clear();
-            level01.Draw();
+            level.Draw();
             player.Draw();
 
             Raylib.EndDrawing();
@@ -278,7 +301,7 @@ namespace net_rogue
 
         }
 
-        void GameLoop()
+        public void GameLoop()
         {
             while (Raylib.WindowShouldClose() == false)
             {
@@ -286,10 +309,13 @@ namespace net_rogue
                 UpdateGame();
    
             }
-            Raylib.UnloadTexture(imageTexture);
+            Raylib.UnloadTexture(tilesheet);
 
             Raylib.CloseWindow();
 
         }
     }
 }
+
+
+
