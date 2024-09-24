@@ -10,6 +10,7 @@ using ZeroElectric.Vinculum;
 using static System.Net.Mime.MediaTypeNames;
 using System.Windows.Input;
 using TurboMapReader;
+using RayGuiCreator;
 
 namespace net_rogue
 {
@@ -23,8 +24,13 @@ namespace net_rogue
         public int game_height = 800;
         public RenderTexture game_screen;
         public static int tileSize = 16;
+        GameState currentGameState;
 
-
+        enum GameState
+        {
+            MainMenu,
+            GameLoop
+        }
         private string AskName()
         {
             string nameAnswer;
@@ -154,6 +160,7 @@ namespace net_rogue
 
         private void Init()
         {
+
             player = CreateCharacter();
 
             Raylib.InitWindow(800, 600, "Image_test");
@@ -193,12 +200,15 @@ namespace net_rogue
 
             //level01 = loader.LoadMapFromFile("mapfile.json");
             //level01 = mapread.LoadLayeredMap("Maps/mapfile_layers.json");
-            level = mapread.LoadMapFromFile("Maps/mapfile.");
+            level = mapread.LoadMapFromFile("Maps/MapsFile.tmj");
             level.SetTileSheet(tilesheet);
             player.SetImageAndIndex(tilesheet,12, 8 * 12 + 3);
             Texture imageTexture = Raylib.LoadTexture("image.png");
 
-           // Rectange imageRect = new Rectangle(imagePixelX, imagePixelY, Game.tileSize, Game.tileSize);
+            // Rectange imageRect = new Rectangle(imagePixelX, imagePixelY, Game.tileSize, Game.tileSize);
+
+
+            currentGameState = GameState.MainMenu;
 
         }
 
@@ -301,10 +311,86 @@ namespace net_rogue
 
         }
 
+        public void DrawMainMenu()
+        {
+            // Tyhjennä ruutu ja aloita piirtäminen
+            Raylib.BeginDrawing();
+            Raylib.ClearBackground(Raylib.BLACK);
+
+            // Laske ylimmän napin paikka ruudulla.
+            int button_width = 100;
+            int button_height = 20;
+            int button_x = Raylib.GetScreenWidth() / 2 - button_width / 2;
+            int button_y = Raylib.GetScreenHeight() / 2 - button_height / 2;
+
+            // Piirrä pelin nimi nappien yläpuolelle
+            RayGui.GuiLabel(new Rectangle(button_x, button_y - button_height * 2, button_width, button_height), "Rogue");
+
+            if (RayGui.GuiButton(new Rectangle(button_x, button_y, button_width, button_height), "Start Game") == 1)
+            {
+               // currentState = GameState.GameLoop;
+            }
+            button_y += button_height * 2;
+
+            if (RayGui.GuiButton(new Rectangle(button_x,
+                button_y,
+                button_width, button_height), "Options") == 1)
+            {
+                // Go to options somehow
+            }
+
+            button_y += button_height * 2;
+
+            if (RayGui.GuiButton(new Rectangle(button_x,
+                button_y,
+                button_width, button_height), "Quit") == 1)
+            {
+                // Quit the game
+            }
+
+            switch (currentGameState)
+            {
+                case GameState.MainMenu:
+                    Raylib.BeginDrawing();
+                    Raylib.ClearBackground(Raylib.DARKGRAY);
+                        DrawMainMenu();
+                    Raylib.EndDrawing;
+                    break;
+            }
+            Raylib.EndDrawing();
+        }
+    
+
+
         public void GameLoop()
         {
+
+            switch (currentGameState)
+            {
+                case GameState.MainMenu:
+                    // Tämä koodi on uutta
+                    DrawMainMenu();
+                    break;
+            }
+
+
+            DrawMainMenu();
+
             while (Raylib.WindowShouldClose() == false)
             {
+                switch (currentGameState)
+                {
+                    case GameState.MainMenu:
+                        // Tämä koodi on uutta
+                        DrawMainMenu();
+                        break;
+
+                    case GameState.GameLoop:
+                        // Tämä koodi on se mitä GameLoop() funktiossa oli ennen muutoksia
+                        UpdateGame();
+                        //DrawGameToTexture();
+                        break;
+                }
                 DrawGame();
                 UpdateGame();
    

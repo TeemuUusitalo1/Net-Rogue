@@ -42,7 +42,7 @@ namespace net_rogue
                 {
                     int index = x + y * mapWidth; // Calculate index of tile at (x, y)
                     int tileId = mapTiles[index]; // Read the tile value at index
-
+                    Raylib.DrawText(tileId.ToString(), x, y,Game.tileSize , Raylib.WHITE);
 
                 }
             }
@@ -61,6 +61,7 @@ namespace net_rogue
             Console.WriteLine($"Error: No layer with name: {layerName}");
             return null; // Wanted layer was not found!
         }
+
     }
 
     class MapLayer

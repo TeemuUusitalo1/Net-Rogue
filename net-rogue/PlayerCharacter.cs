@@ -53,7 +53,6 @@ namespace net_rogue
         {
             //graphicsMode = GameGraphicsMode.Console;
 
-           // texture = Image;
 
             int imagesPerRow = 2;
             int tileSize = 100;

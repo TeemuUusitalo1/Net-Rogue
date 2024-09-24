@@ -10,6 +10,7 @@ using Newtonsoft.Json;
 using System.Numerics;
 using System.IO.MemoryMappedFiles;
 using System.IO.Enumeration;
+using TurboMapReader;
 
 
 namespace net_rogue
@@ -83,6 +84,40 @@ namespace net_rogue
             Map loadedMap = JsonConvert.DeserializeObject<Map>(fileContents);
 
             return loadedMap;
+        }
+
+        public Map ConvertTiledMapToMap(TiledMap turboMap)
+        {
+            // Luo tyhjä kenttä
+            Map rogueMap = new Map();
+
+            // Muunna tason "ground" tiedot
+            TurboMapReader.MapLayer groundLayer = turboMap.GetLayerByName("ground");
+
+            // TODO: Lue kentän leveys. Kaikilla TurboMapReader.MapLayer olioilla on sama leveys
+
+            // Kuinka monta kenttäpalaa tässä tasossa on?
+            int howManyTiles = groundLayer.data.Length;
+            // Taulukko jossa palat ovat
+            int[] groundTiles = groundLayer.data;
+
+            // Luo uusi taso tietojen perusteella
+            MapLayer myGroundLayer = new MapLayer(howManyTiles);
+            myGroundLayer.name = "ground";
+
+
+            // TODO: lue tason palat
+
+
+
+            // Tallenna taso kenttään
+            rogueMap.layers[0] = myGroundLayer;
+
+            // TODO: Muunna tason "enemies" tiedot...
+            // TODO: Muunna tason "items" tiedot...
+
+            // Lopulta palauta kenttä
+            return rogueMap;
         }
     }
 }
