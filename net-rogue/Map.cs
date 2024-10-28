@@ -1,34 +1,55 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 using ZeroElectric.Vinculum;
 
 namespace net_rogue
 {
+    public enum MapTile : int
+    {
+        Floor = 48,
+        Wall = 40
+    }
+
     internal class Map
     {
         public int mapWidth;
+        private int mapHeight;
         public MapLayer[] layers;
         public int[] mapTiles;
 
         Texture texture;
 
-
+        
         public void SetTileSheet(Texture Image)
         {
             texture = Image;
         }
-
-        public int GetTileAt(int x, int y)
+        public MapTile GetTileAt(int x, int y)
         {
-            if (x < 0 || y < 0)
-            {
-                return x;
-            }
-            return 0;
+            // Calculate index: index = x + y * mapWidth
+            int indexInMap = x + y * mapWidth;
+            // Use the index to get a map tile from map's array
+            int mapTileAtIndex = mapTiles[indexInMap];
+            return (MapTile)mapTileAtIndex;
         }
+
+        public Map()
+        {
+            mapWidth = 1;
+            mapHeight = 1;
+            layers = new MapLayer[3];
+            for (int i = 0; i < layers.Length; i++)
+            {
+                layers[i] = new MapLayer(mapWidth * mapHeight);
+            }
+           // enemies = new List<Enemy>() { };
+           // items = new List<Item>() { };
+        }
+
         public void Draw()
         {
 
@@ -44,10 +65,30 @@ namespace net_rogue
                     int tileId = mapTiles[index]; // Read the tile value at index
                     Raylib.DrawText(tileId.ToString(), x, y,Game.tileSize , Raylib.WHITE);
 
+                    // NOTE: tähän kohtaan palataan tehtävässä T06
+                    int spriteId = tileId;
+
+                    // TODO:
+                    // Käytä samaa koodia kaikkien palojen piirtämiseen:
+                    // Tarvitset muuttujat: spriteId, x, y, tilesPerRow
+
+                    // TODO:
+                    // Laske palan pikselikordinaatit kuvassa spriteIndex;in avulla
+                    // Laske palalle suorakulmio (Rectangle)
+                    // Laske pikselikordinaatit, joihin pala piirretään
+                    // Käytä piirtämiseen Raylib.DrawTextureRec()
+
                 }
             }
 
         }
+        public Vector2 GetSpritePosition(int spriteIndex, int spritesPerRow)
+        {
+            float spritePixelX = (spriteIndex % spritesPerRow) * Game.tileSize;
+            float spritePixelY = (int)(spriteIndex / spritesPerRow) * Game.tileSize;
+            return new Vector2(spritePixelX, spritePixelY);
+        }
+
 
         public MapLayer GetLayer(string layerName)
         {
@@ -63,11 +104,5 @@ namespace net_rogue
         }
 
     }
-
-    class MapLayer
-    {
-        public string name;
-        public int[] mapTiles;
-    }
-
+    
 }

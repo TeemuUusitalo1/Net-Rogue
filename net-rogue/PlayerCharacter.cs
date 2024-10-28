@@ -32,6 +32,8 @@ namespace net_rogue
         public string Name;
         public Species species;
         public Role role;
+        Texture myImage;
+
 
         public Vector2 position;
 
@@ -52,35 +54,13 @@ namespace net_rogue
         public void Draw()
         {
             //graphicsMode = GameGraphicsMode.Console;
+            Raylib.DrawTextureV(myImage, position, Raylib.WHITE);
 
 
             int imagesPerRow = 2;
             int tileSize = 100;
 
-            // Surullisen kissan koordinaatit
-            int X = 0;
-            int Y = 1;
 
-            // indeksit ovat:
-            // 0, 1
-            // 2, 3
-            // joten atlasIndex on 2
-            int atlasIndex = Y * imagesPerRow + X;
-
-            // Laske kuvan kohta
-            int imageX = atlasIndex % imagesPerRow; // 2 % 2 = 0
-            int imageY = (int)(atlasIndex / imagesPerRow); // 2 / 2 = 1
-            int imagePixelX = imageX * tileSize; // 0 * 100 = 0
-            int imagePixelY = imageY * tileSize; // 1 * 100 = 100
-
-            // Laske suorakulmio
-            Rectangle imageRect = new Rectangle(imagePixelX, imagePixelY, tileSize, tileSize);
-
-            // Laske paikka ruudulla
-            Vector2 position = new Vector2(2, 5);
-            int pixelPositionX = (int)(position.X * tileSize);
-            int pixelPositionY = (int)(position.Y * tileSize);
-            Vector2 pixelPosition = new Vector2(pixelPositionX, pixelPositionY);
         } 
 
 

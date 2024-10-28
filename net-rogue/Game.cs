@@ -29,6 +29,7 @@ namespace net_rogue
         enum GameState
         {
             MainMenu,
+            CharacterCreation,
             GameLoop
         }
         private string AskName()
@@ -156,7 +157,6 @@ namespace net_rogue
 
         }
 
-        Texture myImage;
 
         private void Init()
         {
@@ -166,7 +166,7 @@ namespace net_rogue
             Raylib.InitWindow(800, 600, "Image_test");
             Raylib.SetTargetFPS(30);
             Raylib.SetWindowState(ConfigFlags.FLAG_WINDOW_RESIZABLE);
-           // drawMode = GameDrawMode.TopDown2D;
+            // drawMode = GameDrawMode.TopDown2D;
             game_width = 480 / 2;
             game_height = 270 / 2;
 
@@ -185,7 +185,7 @@ namespace net_rogue
 
             if (tiledMap == null)
             {
-            // error!
+                // error!
             }
 
             //TurboMapReader.MapLayer groundLayer = tiledMap.GetLayerByName("Ground");
@@ -202,7 +202,7 @@ namespace net_rogue
             //level01 = mapread.LoadLayeredMap("Maps/mapfile_layers.json");
             level = mapread.LoadMapFromFile("Maps/MapsFile.tmj");
             level.SetTileSheet(tilesheet);
-            player.SetImageAndIndex(tilesheet,12, 8 * 12 + 3);
+            player.SetImageAndIndex(tilesheet, 12, 8 * 12 + 3);
             Texture imageTexture = Raylib.LoadTexture("image.png");
 
             // Rectange imageRect = new Rectangle(imagePixelX, imagePixelY, Game.tileSize, Game.tileSize);
@@ -212,18 +212,14 @@ namespace net_rogue
 
         }
 
-
-
+        //void IsWall(intx inty)
 
         private Vector2 position;
-
-
 
         private void DrawGame()
         {
             Raylib.BeginDrawing();
 
-            Raylib.DrawTextureV(myImage, position, Raylib.WHITE);
 
             //void DrawTextureV(Texture2D texture, Vector2 position, Color tint);
 
@@ -234,13 +230,12 @@ namespace net_rogue
             Raylib.EndDrawing();
         }
 
-
         private void UpdateGame()
         {
 
 
 
-            { 
+            {
 
                 player.position = new Vector2(1, 1);
 
@@ -257,7 +252,7 @@ namespace net_rogue
                     moveY = -1;
                 }
                 else if (Raylib.IsKeyPressed(KeyboardKey.KEY_DOWN))
-                {   
+                {
                     moveY = 1;
                 }
                 else if (Raylib.IsKeyPressed(KeyboardKey.KEY_LEFT))
@@ -268,14 +263,21 @@ namespace net_rogue
                 {
                     moveX = 1;
                 }
-
-
-
-            
-
-                //
+                
                 // TODO: CHECK COLLISION WITH WALLS
                 //
+
+                MapTile tile = level.GetTileAt(moveX, moveY);
+                if (tile == MapTile.Floor)
+                {
+                    // Voi liikkua
+                }
+                else if (tile == MapTile.Wall)
+                {
+                    // Ei voi liikkua
+                }
+                //
+
 
 
                 // Prevent player from going outside screen
@@ -301,13 +303,7 @@ namespace net_rogue
                 player.position.X += moveX;
                 player.position.Y += moveY;
 
-
-
-
             }
-
-
-
 
         }
 
@@ -316,6 +312,7 @@ namespace net_rogue
             // Tyhjennä ruutu ja aloita piirtäminen
             Raylib.BeginDrawing();
             Raylib.ClearBackground(Raylib.BLACK);
+
 
             // Laske ylimmän napin paikka ruudulla.
             int button_width = 100;
@@ -328,7 +325,7 @@ namespace net_rogue
 
             if (RayGui.GuiButton(new Rectangle(button_x, button_y, button_width, button_height), "Start Game") == 1)
             {
-               // currentState = GameState.GameLoop;
+                // currentState = GameState.GameLoop;
             }
             button_y += button_height * 2;
 
@@ -347,61 +344,56 @@ namespace net_rogue
             {
                 // Quit the game
             }
-
-            switch (currentGameState)
-            {
-                case GameState.MainMenu:
-                    Raylib.BeginDrawing();
-                    Raylib.ClearBackground(Raylib.DARKGRAY);
-                        DrawMainMenu();
-                    Raylib.EndDrawing;
-                    break;
-            }
             Raylib.EndDrawing();
+
         }
-    
 
 
         public void GameLoop()
         {
-
-            switch (currentGameState)
-            {
-                case GameState.MainMenu:
-                    // Tämä koodi on uutta
-                    DrawMainMenu();
-                    break;
-            }
-
-
-            DrawMainMenu();
 
             while (Raylib.WindowShouldClose() == false)
             {
                 switch (currentGameState)
                 {
                     case GameState.MainMenu:
-                        // Tämä koodi on uutta
+                        Raylib.BeginDrawing();
+                        Raylib.ClearBackground(Raylib.DARKGRAY);
                         DrawMainMenu();
+                        Raylib.EndDrawing();
+                        break;
+
+                    case GameState.CharacterCreation:
+                        Raylib.BeginDrawing();
+                        Raylib.ClearBackground(Raylib.DARKGRAY);
+                        DrawMainMenu();
+                        Raylib.EndDrawing();
                         break;
 
                     case GameState.GameLoop:
-                        // Tämä koodi on se mitä GameLoop() funktiossa oli ennen muutoksia
                         UpdateGame();
-                        //DrawGameToTexture();
+                        DrawGame();
                         break;
                 }
-                DrawGame();
-                UpdateGame();
-   
+
             }
+
+
+
+
             Raylib.UnloadTexture(tilesheet);
-
+            Raylib.EndDrawing();
             Raylib.CloseWindow();
-
         }
+
+        //void OnstateChangeRequested(object sender, GameState newState)
     }
 }
+
+    //internal class OptionsMenu
+    //{
+      //  public event EventHandler<Game.Gamestate> stateChangeRequested;
+    //}
 
 
 

@@ -44,5 +44,9 @@
   <ItemGroup>
     <ProjectReference Include="..\..\TurboMapReader\TurboMapReader.csproj" />
   </ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="	C:\GitHub Repository\RaiGuiCreator\RayGuiCreator\RayGuiCreator\RayGuiCreator.csproj" />
+	</ItemGroup>
+
 
 </Project>
