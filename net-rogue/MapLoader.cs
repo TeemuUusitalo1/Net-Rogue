@@ -85,38 +85,62 @@ namespace net_rogue
 
             return loadedMap;
         }
+        public Map? ReadMapFromFile(string filename)
+        {
+            // Lataa tiedosto käyttäen TurboMapReaderia   
+            TurboMapReader.TiledMap mapMadeInTiled = TurboMapReader.MapReader.LoadMapFromFile(filename);
+
+            // Tarkista onnistuiko lataaminen
+            if (mapMadeInTiled != null)
+            {
+                // Muuta Map olioksi ja palauta
+                return ConvertTiledMapToMap(mapMadeInTiled);
+            }
+            else
+            {
+                // OH NO!
+                return null;
+            }
+        }
 
         public Map ConvertTiledMapToMap(TiledMap turboMap)
         {
-            // Luo tyhjä kenttä
+            // Create an empty map
             Map rogueMap = new Map();
 
-            // Muunna tason "ground" tiedot
+            // Convert the "ground" layer data
             TurboMapReader.MapLayer groundLayer = turboMap.GetLayerByName("ground");
 
-            // TODO: Lue kentän leveys. Kaikilla TurboMapReader.MapLayer olioilla on sama leveys
+            // Read the map width. All TurboMapReader.MapLayer objects have the same width
+            int mapWidth = groundLayer.width;
 
-            // Kuinka monta kenttäpalaa tässä tasossa on?
+            // How many tiles are in this layer?
             int howManyTiles = groundLayer.data.Length;
-            // Taulukko jossa palat ovat
+            // Array where the tiles are
             int[] groundTiles = groundLayer.data;
 
-            // Luo uusi taso tietojen perusteella
+            // Create a new layer based on the data
             MapLayer myGroundLayer = new MapLayer(howManyTiles);
             myGroundLayer.name = "ground";
 
+            // Read the layer tiles
+            for (int i = 0; i < howManyTiles; i++)
+            {
+                myGroundLayer.mapTiles[i] = groundTiles[i];
+            }
 
-            // TODO: lue tason palat
-
-
-
-            // Tallenna taso kenttään
+            // Save the layer to the map
             rogueMap.layers[0] = myGroundLayer;
 
-            // TODO: Muunna tason "enemies" tiedot...
-            // TODO: Muunna tason "items" tiedot...
+            // Convert the "enemies" layer data...
+            TurboMapReader.MapLayer enemiesLayer = turboMap.GetLayerByName("enemies");
+            // TODO: Implement enemy conversion logic
 
-            // Lopulta palauta kenttä
+            // Convert the "items" layer data...
+            TurboMapReader.MapLayer itemsLayer = turboMap.GetLayerByName("items");
+            // TODO: Implement item conversion logic
+
+            // Finally, return the map
             return rogueMap;
         }
     }

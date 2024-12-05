@@ -173,10 +173,10 @@ namespace net_rogue
             game_screen = Raylib.LoadRenderTexture(game_width, game_height);
             Raylib.SetTextureFilter(game_screen.texture, TextureFilter.TEXTURE_FILTER_POINT);
             Raylib.SetWindowMinSize(game_width, game_height);
-            tilesheet = Raylib.LoadTexture("Images/tilemap_packed.png");
+            tilesheet = Raylib.LoadTexture("Maps/tiny dungeon.tsx");
 
 
-            TurboMapReader.TiledMap tiledMap = TurboMapReader.MapReader.LoadMapFromFile("Maps/mapfile.json");
+            TurboMapReader.TiledMap tiledMap = TurboMapReader.MapReader.LoadMapFromFile("Maps/tiledmap.tmj");
 
             int mapWidth = tiledMap.width;
             int mapHeight = tiledMap.height;
@@ -188,19 +188,14 @@ namespace net_rogue
                 // error!
             }
 
-            //TurboMapReader.MapLayer groundLayer = tiledMap.GetLayerByName("Ground");
-            //TiledMap loadedTileMap = TurboMapReader.MapReader.LoadMapFromFile(f);
-
-            int howManyTiles = groundLayer.data.Length;
-            int[] groundTiles = groundLayer.data;
-            MapLayer myGroundLayer = new MapLayer();
-            myGroundLayer.mapTiles = new int[howManyTiles];
+            TiledMap loadedTileMap = TurboMapReader.MapReader.LoadMapFromFile("Maps/tiny dungeon.tsx");
+;
 
             MapLoader mapread = new MapLoader();
 
             //level01 = loader.LoadMapFromFile("mapfile.json");
             //level01 = mapread.LoadLayeredMap("Maps/mapfile_layers.json");
-            level = mapread.LoadMapFromFile("Maps/MapsFile.tmj");
+            level = mapread.LoadMapFromFile("Maps/tiledmap.tmj");
             level.SetTileSheet(tilesheet);
             player.SetImageAndIndex(tilesheet, 12, 8 * 12 + 3);
             Texture imageTexture = Raylib.LoadTexture("image.png");
@@ -309,44 +304,42 @@ namespace net_rogue
 
         public void DrawMainMenu()
         {
-            // Tyhjennä ruutu ja aloita piirtäminen
+            // Piirtämisen aloitus
             Raylib.BeginDrawing();
             Raylib.ClearBackground(Raylib.BLACK);
 
+            // Määritellään valikon sijainti ja mitat
+            int menuStartX = 10;
+            int menuStartY = 50;
+            int rowHeight = Raylib.GetScreenHeight() / 15;
+            int menuWidth = Raylib.GetScreenWidth() / 3;
 
-            // Laske ylimmän napin paikka ruudulla.
-            int button_width = 100;
-            int button_height = 20;
-            int button_x = Raylib.GetScreenWidth() / 2 - button_width / 2;
-            int button_y = Raylib.GetScreenHeight() / 2 - button_height / 2;
+            // MenuCreator luodaan
+            MenuCreator creator = new MenuCreator(menuStartX, menuStartY, rowHeight, menuWidth);
 
-            // Piirrä pelin nimi nappien yläpuolelle
-            RayGui.GuiLabel(new Rectangle(button_x, button_y - button_height * 2, button_width, button_height), "Rogue");
+            // Piirretään pelin nimi
+            creator.Label("Super Awesome Game");
 
-            if (RayGui.GuiButton(new Rectangle(button_x, button_y, button_width, button_height), "Start Game") == 1)
+            // Piirretään ohjeteksti
+            creator.Label("Ohjeet:\n- Käytä nuolinäppäimiä liikkumiseen\n- Space ampuu\n- Esc sulkee pelin");
+
+            // Piirretään nappi pelin käynnistämiseen
+            if (creator.Button("Aloita peli"))
             {
-                // currentState = GameState.GameLoop;
+                // Vaihdetaan pelitila pelilooppiin
+                currentGameState = GameState.GameLoop;
             }
-            button_y += button_height * 2;
 
-            if (RayGui.GuiButton(new Rectangle(button_x,
-                button_y,
-                button_width, button_height), "Options") == 1)
+            // Piirretään nappi ohjelman sulkemiseen
+            if (creator.Button("Lopeta peli"))
             {
-                // Go to options somehow
+                Raylib.CloseWindow();
             }
 
-            button_y += button_height * 2;
-
-            if (RayGui.GuiButton(new Rectangle(button_x,
-                button_y,
-                button_width, button_height), "Quit") == 1)
-            {
-                // Quit the game
-            }
+            // Piirtämisen lopetus
             Raylib.EndDrawing();
-
         }
+
 
 
         public void GameLoop()
