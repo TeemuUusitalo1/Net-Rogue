@@ -173,34 +173,39 @@ namespace net_rogue
             game_screen = Raylib.LoadRenderTexture(game_width, game_height);
             Raylib.SetTextureFilter(game_screen.texture, TextureFilter.TEXTURE_FILTER_POINT);
             Raylib.SetWindowMinSize(game_width, game_height);
-            tilesheet = Raylib.LoadTexture("Maps/tiny dungeon.tsx");
+            tilesheet = Raylib.LoadTexture("Images/tilemap_packed.png");
 
-
-            TurboMapReader.TiledMap tiledMap = TurboMapReader.MapReader.LoadMapFromFile("Maps/tiledmap.tmj");
+            // Raylib.InitWindow(game_width, game_height,"Image_test");
+            player.position = new Vector2(2, 3);
+            TurboMapReader.TiledMap tiledMap = MapReader.LoadMapFromFile("Maps/tiledmap.tmj");
 
             int mapWidth = tiledMap.width;
             int mapHeight = tiledMap.height;
 
-            TurboMapReader.MapLayer groundLayer = tiledMap.GetLayerByName("Ground");
+            TurboMapReader.MapLayer groundLayer = tiledMap.GetLayerByName("ground");
 
             if (tiledMap == null)
             {
                 // error!
             }
 
-            TiledMap loadedTileMap = TurboMapReader.MapReader.LoadMapFromFile("Maps/tiny dungeon.tsx");
-;
+            TiledMap loadedTileMap = TurboMapReader.MapReader.LoadMapFromFile("Images/tilemap_packed.png");
+
 
             MapLoader mapread = new MapLoader();
 
             //level01 = loader.LoadMapFromFile("mapfile.json");
             //level01 = mapread.LoadLayeredMap("Maps/mapfile_layers.json");
             level = mapread.LoadMapFromFile("Maps/tiledmap.tmj");
+
             level.SetTileSheet(tilesheet);
             player.SetImageAndIndex(tilesheet, 12, 8 * 12 + 3);
+            level.LoadEnemies();
+            level.LoadItems();
             Texture imageTexture = Raylib.LoadTexture("image.png");
 
             // Rectange imageRect = new Rectangle(imagePixelX, imagePixelY, Game.tileSize, Game.tileSize);
+
 
 
             currentGameState = GameState.MainMenu;
@@ -218,7 +223,7 @@ namespace net_rogue
 
             //void DrawTextureV(Texture2D texture, Vector2 position, Color tint);
 
-            Console.Clear();
+            Raylib.ClearBackground(Raylib.GRAY);
             level.Draw();
             player.Draw();
 
@@ -228,11 +233,9 @@ namespace net_rogue
         private void UpdateGame()
         {
 
-
-
             {
 
-                player.position = new Vector2(1, 1);
+
 
 
                 Console.SetCursorPosition((int)player.position.X, (int)player.position.Y);
@@ -262,16 +265,38 @@ namespace net_rogue
                 // TODO: CHECK COLLISION WITH WALLS
                 //
 
-                MapTile tile = level.GetTileAt(moveX, moveY);
+                MapTile tile = level.GetTileAt((int) player.position.X + moveX,(int) player.position.Y + moveY);
                 if (tile == MapTile.Floor)
                 {
                     // Voi liikkua
+                    Enemy enemy = level.GetEnemyAt((int)player.position.X + moveX, (int)player.position.Y + moveY);
+                    if (enemy == null)
+                    {
+                        
+                    }
+                    else
+                    {
+                        moveX = 0;
+                        moveY = 0;
+                    }
+                    Item item = level.GetItemAt((int)player.position.X + moveX, (int)player.position.Y + moveY);
+                    if (item == null)
+                    {
+
+                    }
+                    else
+                    {
+                        moveX = 0;
+                        moveY = 0;
+                    }
                 }
                 else if (tile == MapTile.Wall)
                 {
                     // Ei voi liikkua
+                    moveX = 0;
+                    moveY = 0;
                 }
-                //
+                
 
 
 
@@ -337,7 +362,6 @@ namespace net_rogue
             }
 
             // Piirtämisen lopetus
-            Raylib.EndDrawing();
         }
 
 

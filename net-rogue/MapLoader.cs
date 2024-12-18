@@ -24,7 +24,7 @@ namespace net_rogue
             Map test = new Map();
 
             test.mapWidth = 8;
-            test.mapTiles = new int[] {
+            test.data = new int[] {
                 2, 2, 2, 2, 2, 2, 2, 2,
                 2, 1, 1, 2, 1, 1, 1, 2,
                 2, 1, 1, 2, 1, 1, 1, 2,
@@ -58,6 +58,7 @@ namespace net_rogue
 
         public Map LoadMapFromFile(string filename)
         {
+            fileFound = File.Exists(filename);
 
             if (fileFound == false)
             {
@@ -71,7 +72,7 @@ namespace net_rogue
 
 
 
-                using (StreamReader reader = File.OpenText("mapfile.json"))
+                using (StreamReader reader = File.OpenText(filename))
                 {
 
                     fileContents = reader.ReadToEnd();
@@ -105,44 +106,72 @@ namespace net_rogue
 
         public Map ConvertTiledMapToMap(TiledMap turboMap)
         {
-            // Create an empty map
-            Map rogueMap = new Map();
-
-            // Convert the "ground" layer data
-            TurboMapReader.MapLayer groundLayer = turboMap.GetLayerByName("ground");
-
-            // Read the map width. All TurboMapReader.MapLayer objects have the same width
-            int mapWidth = groundLayer.width;
-
-            // How many tiles are in this layer?
-            int howManyTiles = groundLayer.data.Length;
-            // Array where the tiles are
-            int[] groundTiles = groundLayer.data;
-
-            // Create a new layer based on the data
-            MapLayer myGroundLayer = new MapLayer(howManyTiles);
-            myGroundLayer.name = "ground";
-
-            // Read the layer tiles
-            for (int i = 0; i < howManyTiles; i++)
+            // Luo tyhjä kenttä
+            Map rogueMap = new Map
             {
-                myGroundLayer.mapTiles[i] = groundTiles[i];
+                // Asetetaan kentän leveys ja korkeus TurboMapReaderin tiedoista
+                mapWidth = turboMap.width,
+                mapHeight = turboMap.height
+            };
+
+            // Muunna tason "ground" tiedot
+            TurboMapReader.MapLayer groundLayer = turboMap.GetLayerByName("ground");
+            if (groundLayer != null)
+            {
+                int howManyTiles = groundLayer.data.Length; // Kuinka monta kenttäpalaa tasossa on
+                int[] groundTiles = groundLayer.data;
+
+                // Luo uusi taso ja kopioi tiedot
+                MapLayer myGroundLayer = new MapLayer(howManyTiles)
+                {
+                    name = "ground",
+                    data = groundTiles // Kopioidaan kaikki palat
+                };
+
+                // Tallenna taso kenttään
+                rogueMap.layers[0] = myGroundLayer;
             }
 
-            // Save the layer to the map
-            rogueMap.layers[0] = myGroundLayer;
+            // Muunna tason "enemies" tiedot
+            TurboMapReader.MapLayer enemyLayer = turboMap.GetLayerByName("enemies");
+            if (enemyLayer != null)
+            {
+                int howManyEnemies = enemyLayer.data.Length; // Kuinka monta vihollista tasossa on
+                int[] enemyTiles = enemyLayer.data;
 
-            // Convert the "enemies" layer data...
-            TurboMapReader.MapLayer enemiesLayer = turboMap.GetLayerByName("enemies");
-            // TODO: Implement enemy conversion logic
+                // Luo uusi taso ja kopioi tiedot
+                MapLayer myEnemyLayer = new MapLayer(howManyEnemies)
+                {
+                    name = "enemies",
+                    data = enemyTiles // Kopioidaan kaikki viholliset
+                };
 
-            // Convert the "items" layer data...
-            TurboMapReader.MapLayer itemsLayer = turboMap.GetLayerByName("items");
-            // TODO: Implement item conversion logic
+                // Tallenna taso kenttään
+                rogueMap.layers[1] = myEnemyLayer;
+            }
 
-            // Finally, return the map
+            // Muunna tason "items" tiedot
+            TurboMapReader.MapLayer itemLayer = turboMap.GetLayerByName("items");
+            if (itemLayer != null)
+            {
+                int howManyItems = itemLayer.data.Length; // Kuinka monta esinettä tasossa on
+                int[] itemTiles = itemLayer.data;
+
+                // Luo uusi taso ja kopioi tiedot
+                MapLayer myItemLayer = new MapLayer(howManyItems)
+                {
+                    name = "items",
+                    data = itemTiles // Kopioidaan kaikki esineet
+                };
+
+                // Tallenna taso kenttään
+                rogueMap.layers[2] = myItemLayer;
+            }
+
+            // Lopulta palauta kenttä
             return rogueMap;
         }
+
     }
 }
 

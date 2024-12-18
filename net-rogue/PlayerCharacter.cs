@@ -28,7 +28,7 @@ namespace net_rogue
     internal class PlayerCharacter
     {
 
-        Texture texture;
+
         public string Name;
         public Species species;
         public Role role;
@@ -41,21 +41,24 @@ namespace net_rogue
         ConsoleColor drawColor;
         int imagePixelX;
         int imagePixelY;
-
+        Rectangle imageRect;
 
         public void SetImageAndIndex(Texture Image, int imagesPerRow, int Index)
         {
-            texture = Image;
+            myImage = Image;
             imagePixelX = (Index % imagesPerRow) * Game.tileSize;
             imagePixelY = (int)(Index / imagesPerRow) * Game.tileSize;
+
+           imageRect = new Rectangle(imagePixelX, imagePixelY, Game.tileSize, Game.tileSize);
         }
 
 
         public void Draw()
         {
-            //graphicsMode = GameGraphicsMode.Console;
-            Raylib.DrawTextureV(myImage, position, Raylib.WHITE);
 
+            //graphicsMode = GameGraphicsMode.Console;
+            Vector2 pixelPos = new Vector2(position.X * Game.tileSize, position.Y * Game.tileSize);
+            Raylib.DrawTextureRec(myImage, imageRect, pixelPos, Raylib.WHITE);
 
             int imagesPerRow = 2;
             int tileSize = 100;
