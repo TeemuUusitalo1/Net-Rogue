@@ -11,6 +11,8 @@ using static System.Net.Mime.MediaTypeNames;
 using System.Windows.Input;
 using TurboMapReader;
 using RayGuiCreator;
+using static System.Runtime.InteropServices.JavaScript.JSType;
+using System.Collections;
 
 namespace net_rogue
 {
@@ -26,126 +28,30 @@ namespace net_rogue
         public static int tileSize = 16;
         GameState currentGameState;
 
+        OptionsMenu myOptionsMenu;
+        PauseMenu myPauseMenu;
+
+        // List of possible difficulty choices. The indexing starts at 0
+        MultipleChoiceEntry SpeciesChoices = new MultipleChoiceEntry(
+            new string[] { "Human", "Elf", "Orc" });
+        // List of possible class choices.
+        MultipleChoiceEntry RoleChoices = new MultipleChoiceEntry(
+            new string[] { "Rogue", "Warrior", "Magic User" });
+
+        // Textbox data for player's name
+        TextBoxEntry playerNameEntry = new TextBoxEntry(15);
+
+        Stack<GameState> stateStack = new Stack<GameState>();
+
         enum GameState
         {
             MainMenu,
             CharacterCreation,
-            GameLoop
+            GameLoop,
+            PauseMenu,
+            OptionsMenu
         }
-        private string AskName()
-        {
-            string nameAnswer;
-            while (true)
-            {
-                Console.WriteLine("What is your name?");
-                nameAnswer = Console.ReadLine();
-
-                if (String.IsNullOrEmpty(nameAnswer))
-                {
-                    Console.WriteLine("Name cannot be empty!");
-                    continue;
-                }
-
-
-
-
-                bool nameOk = true; // Expect name to be ok
-                for (int i = 0; i < nameAnswer.Length; i++)
-                {
-                    char letter = nameAnswer[i]; // check all characters
-                    if (Char.IsLetter(letter) == false)
-                    {
-                        // found something that is _not_ a letter
-                        nameOk = false;
-                        break; // break the for loop
-                    }
-                }
-                if (nameOk == false)
-                {
-                    Console.WriteLine("Name can only contain letters!");
-                    continue; // Ask again
-                }
-                break;
-            }
-            return nameAnswer;
-
-        }
-
-        private Species AskSpecies()
-        {
-            Species choice = Species.Human;
-            while (true)
-            {
-                Console.WriteLine("Select species for your character:");
-                Console.WriteLine($"1: {Species.Human.ToString()}");
-                Console.WriteLine($"2: {Species.Elf.ToString()}");
-                Console.WriteLine($"3: {Species.Orc.ToString()}");
-                string answer = Console.ReadLine();
-
-                if (answer == "1")
-                {
-                    choice = Species.Human;
-                }
-                else if (answer == "2")
-                {
-                    choice = Species.Elf;
-                }
-                else if (answer == "3")
-                {
-                    choice = Species.Orc;
-                }
-                else
-                {
-                    Console.WriteLine("Invalid choice!");
-                    continue;
-                }
-                return choice;
-            }
-        }
-
-        private Role AskRole()
-        {
-            Role choice = Role.MagicUser;
-            while (true)
-            {
-                Console.WriteLine("Select a Role for your character:");
-                Console.WriteLine($"1: {Role.Rogue.ToString()}");
-                Console.WriteLine($"2: {Role.Warrior.ToString()}");
-                Console.WriteLine($"3: {Role.MagicUser.ToString()}");
-                string answer = Console.ReadLine();
-
-                if (answer == "1")
-                {
-                    choice = Role.Rogue;
-                }
-                else if (answer == "2")
-                {
-                    choice = Role.Warrior;
-                }
-                else if (answer == "3")
-                {
-                    choice = Role.MagicUser;
-                }
-                else
-                {
-                    Console.WriteLine("Invalid choice!");
-                    continue;
-                }
-
-                return choice;
-            }
-        }
-
-
-        private PlayerCharacter CreateCharacter()
-        {
-            PlayerCharacter player = new PlayerCharacter();
-
-            player.Name = AskName();
-            player.species = AskSpecies();
-            player.role = AskRole();
-            return player;
-        }
+        
 
         public void Run()
         {
@@ -161,12 +67,10 @@ namespace net_rogue
         private void Init()
         {
 
-            player = CreateCharacter();
-
-            Raylib.InitWindow(800, 600, "Image_test");
+            Raylib.InitWindow(800, 600, "Rogue");
             Raylib.SetTargetFPS(30);
             Raylib.SetWindowState(ConfigFlags.FLAG_WINDOW_RESIZABLE);
-            // drawMode = GameDrawMode.TopDown2D;
+            
             game_width = 480 / 2;
             game_height = 270 / 2;
 
@@ -174,8 +78,21 @@ namespace net_rogue
             Raylib.SetTextureFilter(game_screen.texture, TextureFilter.TEXTURE_FILTER_POINT);
             Raylib.SetWindowMinSize(game_width, game_height);
             tilesheet = Raylib.LoadTexture("Images/tilemap_packed.png");
+            RayGui.GuiLoadStyle("Style.rgs");
 
-            // Raylib.InitWindow(game_width, game_height,"Image_test");
+            myOptionsMenu = new OptionsMenu();
+            myPauseMenu = new PauseMenu();
+
+            myOptionsMenu = new OptionsMenu();
+            // Kytke asetusvalikon tapahtumaan funktio
+            myOptionsMenu.BackButtonPressedEvent += this.OnOptionsBackButtonPressed;
+
+            myPauseMenu = new PauseMenu();
+            // Kytke asetusvalikon tapahtumaan funktio
+            myPauseMenu.BackButtonPressedEvent += this.OnPauseBackButtonPressed;
+            myPauseMenu.OptionsButtonPressedEvent += this.OnPauseOptionsButtonPressed;
+            myPauseMenu.MainMenuButtonPressedEvent += this.OnPauseMainMenuButtonPressed;
+
             player.position = new Vector2(2, 3);
             TurboMapReader.TiledMap tiledMap = MapReader.LoadMapFromFile("Maps/tiledmap.tmj");
 
@@ -204,24 +121,68 @@ namespace net_rogue
             level.LoadItems();
             Texture imageTexture = Raylib.LoadTexture("image.png");
 
-            // Rectange imageRect = new Rectangle(imagePixelX, imagePixelY, Game.tileSize, Game.tileSize);
-
-
-
             currentGameState = GameState.MainMenu;
 
         }
+        // MENU STUFF ********************************************************************************
+        void OnOptionsBackButtonPressed(object sender, EventArgs args)
+        {
+            if (stateStack.Contains(GameState.PauseMenu) == true)
+            {
+                stateStack.Pop();
+                currentGameState = GameState.PauseMenu;
+            }
+            else if (stateStack.Contains(GameState.MainMenu) == false)
+            {
 
-        //void IsWall(intx inty)
+                currentGameState = GameState.MainMenu;
+            }
 
-        private Vector2 position;
+        }
+
+        void OnPauseBackButtonPressed(object sender, EventArgs args)
+        {
+            currentGameState = GameState.GameLoop;
+            stateStack.Pop();
+        }
+        void OnPauseOptionsButtonPressed(object sender, EventArgs args)
+        {
+            On_OptionsMenu_PauseButtonPressed();
+        }
+        void OnPauseMainMenuButtonPressed(object sender, EventArgs args)
+        {
+            On_PauseMenu_MainMenuButtonPressed();
+
+        }
+
+
+
+        public void On_OptionsMenu_PauseButtonPressed()
+        {
+            currentGameState = GameState.OptionsMenu;
+            stateStack.Push(GameState.OptionsMenu);
+        }
+        public void On_GameLoop_PauseMenuButtonPressed()
+        {
+            currentGameState = GameState.PauseMenu;
+            stateStack.Push(GameState.PauseMenu);
+        }
+        public void On_PauseMenu_MainMenuButtonPressed()
+        {
+            
+            stateStack.Clear();
+            player.position = new Vector2(2, 3);
+            currentGameState = GameState.MainMenu;
+        } 
+
+
+        // MENU STUFF END ****************************************************************************
 
         private void DrawGame()
         {
             Raylib.BeginDrawing();
 
 
-            //void DrawTextureV(Texture2D texture, Vector2 position, Color tint);
 
             Raylib.ClearBackground(Raylib.GRAY);
             level.Draw();
@@ -234,12 +195,8 @@ namespace net_rogue
         {
 
             {
-
-
-
-
                 Console.SetCursorPosition((int)player.position.X, (int)player.position.Y);
-                Console.Write("@");
+
 
                 int moveX = 0;
                 int moveY = 0;
@@ -262,8 +219,6 @@ namespace net_rogue
                     moveX = 1;
                 }
                 
-                // TODO: CHECK COLLISION WITH WALLS
-                //
 
                 MapTile tile = level.GetTileAt((int) player.position.X + moveX,(int) player.position.Y + moveY);
                 if (tile == MapTile.Floor)
@@ -296,9 +251,14 @@ namespace net_rogue
                     moveX = 0;
                     moveY = 0;
                 }
-                
 
 
+                if (Raylib.IsKeyPressed(KeyboardKey.KEY_P))
+                {
+
+                    On_GameLoop_PauseMenuButtonPressed();
+
+                }
 
                 // Prevent player from going outside screen
                 if (player.position.X < 0)
@@ -325,6 +285,7 @@ namespace net_rogue
 
             }
 
+
         }
 
         public void DrawMainMenu()
@@ -343,7 +304,7 @@ namespace net_rogue
             MenuCreator creator = new MenuCreator(menuStartX, menuStartY, rowHeight, menuWidth);
 
             // Piirretään pelin nimi
-            creator.Label("Super Awesome Game");
+            creator.Label("Rogue adventure");
 
             // Piirretään ohjeteksti
             creator.Label("Ohjeet:\n- Käytä nuolinäppäimiä liikkumiseen\n- Space ampuu\n- Esc sulkee pelin");
@@ -352,17 +313,94 @@ namespace net_rogue
             if (creator.Button("Aloita peli"))
             {
                 // Vaihdetaan pelitila pelilooppiin
-                currentGameState = GameState.GameLoop;
+                currentGameState = GameState.CharacterCreation;
+            }
+
+            if (creator.Button("Options"))
+            {
+                On_OptionsMenu_PauseButtonPressed();
             }
 
             // Piirretään nappi ohjelman sulkemiseen
             if (creator.Button("Lopeta peli"))
             {
-                Raylib.CloseWindow();
+                CleanupAndExit();
+            }
+            
+        }
+        private void CleanupAndExit()
+        {
+            // Unload resources
+            Raylib.UnloadTexture(tilesheet);
+            Raylib.UnloadRenderTexture(game_screen);
+
+            // Close the Raylib window
+            Raylib.CloseWindow();
+
+            // Exit the application
+            Environment.Exit(0);
+        }
+
+        void DrawCharacterCreationMenu()
+        {
+
+            
+            int width = Raylib.GetScreenWidth() / 2;
+            // Fit 22 rows on the screen
+            int rows = 22;
+            int rowHeight = Raylib.GetScreenHeight() / rows;
+            // Center the menu horizontally
+            int x = (Raylib.GetScreenWidth() / 2) - (width / 2);
+            // Center the menu vertically
+            int y = (Raylib.GetScreenHeight() - (rowHeight * rows)) / 2;
+            // 3 pixels between rows, text 3 pixels smaller than row height
+            MenuCreator creator = new MenuCreator(x, y, rowHeight, width, 3, -3);
+            creator.Label("Main menu");
+
+            creator.Label("Player name");
+            creator.TextBox(playerNameEntry);
+
+            creator.Label("Character speices");
+            creator.DropDown(SpeciesChoices);
+
+            creator.Label("Character class");
+            creator.DropDown(RoleChoices);
+            string playerName = playerNameEntry.ToString();
+            if (creator.Button("Aloita peli"))
+            {
+                if (string.IsNullOrEmpty(playerName))
+                {
+                    Console.WriteLine("Nimi ei saa olla tyhjä!");
+                }
+                else if (SpeciesChoices == null || RoleChoices == null)
+                {
+                    Console.WriteLine("Valitse laji ja rooli hahmolle!");
+                }
+                else
+                {
+
+                    Console.WriteLine("Hahmon luonti onnistui!");
+                    Console.WriteLine($"Nimi: {playerNameEntry}, Laji: {SpeciesChoices}, Rooli: {RoleChoices}");
+
+                    currentGameState = GameState.GameLoop; // Vaihda pelitilaan
+                }
+               
             }
 
-            // Piirtämisen lopetus
+            // Draws open dropdowns over other menu items
+            int menuHeight = creator.EndMenu();
+
+            // Draws a rectangle around the menu
+            int padding = 2;
+            Raylib.DrawRectangleLines(
+                x - padding,
+                y - padding,
+                width + padding * 2,
+                menuHeight + padding * 2,
+                MenuCreator.GetLineColor());
+
         }
+
 
 
 
@@ -382,14 +420,23 @@ namespace net_rogue
 
                     case GameState.CharacterCreation:
                         Raylib.BeginDrawing();
-                        Raylib.ClearBackground(Raylib.DARKGRAY);
-                        DrawMainMenu();
+                        Raylib.ClearBackground(Raylib.BLACK);
+                        DrawCharacterCreationMenu();
+                       // DrawMainMenu();
                         Raylib.EndDrawing();
                         break;
 
                     case GameState.GameLoop:
                         UpdateGame();
                         DrawGame();
+                        break;
+
+                    case GameState.OptionsMenu:
+                        myOptionsMenu.DrawMenu();
+                        break;
+                    
+                    case GameState.PauseMenu:
+                        myPauseMenu.DrawMenu();
                         break;
                 }
 
